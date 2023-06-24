@@ -1,11 +1,5 @@
  
 
-
-
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // math Number
@@ -39,30 +33,30 @@ function limitFloat(n, p) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-function constrain(v0,v1,v2){
- if(v0<v1){
-   this.varRetrun =v1;
- }else if(v0>v2){
-   this.varRetrun =v2;
- }else{
-   this.varRetrun =v0;
- }
- return this.varRetrun ;
-}
+//function constrain(v0,v1,v2){
+//  if(v0<v1){
+//    this.varRetrun =v1;
+//  }else if(v0>v2){
+//    this.varRetrun =v2;
+//  }else{
+//    this.varRetrun =v0;
+//  }
+//  return this.varRetrun ;
+//}
 
  
-function map(n, start1, stop1, start2, stop2) {
- return ((n-start1)/(stop1-start1))*(stop2-start2)+start2;
-} 
+//function map(n, start1, stop1, start2, stop2) {
+//  return ((n-start1)/(stop1-start1))*(stop2-start2)+start2;
+//} 
 
 
-function lerpColor(c1,c2,n){
- return { r:lerp(c1.r,c2.r,constrain(n,0,10)),g: lerp(c1.g,c2.g,constrain(n,0,10)), b : lerp(c1.b,c2.b,constrain(n,0,10))} ;
-}
+//function lerpColor(c1,c2,n){
+//  return { r:lerp(c1.r,c2.r,constrain(n,0,10)),g: lerp(c1.g,c2.g,constrain(n,0,10)), b : lerp(c1.b,c2.b,constrain(n,0,10))} ;
+//}
 
-function lerp(v0,v1,v2){
-  return v1+(v0-v1)*v2;
-}
+//function lerp(v0,v1,v2){
+//   return v1+(v0-v1)*v2;
+//}
 
 
 
@@ -456,8 +450,7 @@ function Smaller2D(v1,v2,v3){
    this.bArray.push({x:this.aArray[fcre].x+(this.aArray[fcre].w-this.conW)/2,y:this.aArray[fcre].y+(this.aArray[fcre].h-this.conH)/2,w:this.conW,h:this.conH});
  }
  
-  this.aArray.replace(this.bArray);
-  return this.aArray;
+  return this.bArray;
   
 }
 
@@ -498,7 +491,59 @@ function Smaller3D(v1,v2){
 }
 
 
+Array.prototype.transVerts=function(n,n1){
+  for(let mii=0;mii<this.length;mii++){
+    this[mii].x+=n;
+    this[mii].y+=n1;
+    
+  }
+  
+  
+}
 
+Array.prototype.scaleVerts=function(n,n1){
+  if(n1=="center"){
+    let cen0=shapeXYWH(this);
+ 
+    for(let mii=0;mii<this.length ;mii++){
+      this[mii].x-=cen0.x+cen0.w/2   ;
+      this[mii].y-=cen0.y+cen0.w/2   ;
+    }
+    for(let mii=0;mii<this.length ;mii++){
+      this[mii].x*=n;
+      this[mii].y*=n;
+    }
+    let cen1=shapeXYWH(this);
+    for(let mii=0;mii<this.length ;mii++){
+      this[mii].x+=cen0.x +cen0.w/2   ;
+      this[mii].y+=cen0.y +cen0.w/2  ;
+    }
+  }else{
+    for(let mii=0;mii<this.length;mii++){
+      this[mii].x*=n;
+      this[mii].y*=n;
+    
+    }
+  }
+  
+  
+  
+}
+
+Array.prototype.foundVertIdx=function(v){
+  this.bolArridx=false;
+  for(let mii=0;mii<this.length;mii++){
+    if(this[mii][0]==v[0]&&this[mii][1]==v[1]){
+      this.bolArridx=true;
+      break;
+    }else{
+      this.bolArridx=false;
+    }
+ 
+    
+  }
+  return this.bolArridx;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -575,23 +620,36 @@ function subdivide1(a,n){
   
   
   for(let i=0;i<a.length ;i++){
-    this.n =0;
-    let lerpindex =0;
-   while(lerpindex<1){
-     lerpindex =  this.n/distance(a[i].x, a[i].y, a[(i+1)%a.length].x, a[(i+1)%a.length].y)*1.4143;
-     subdivideArrVert.push({x:lerp(a[i].x,a[(i+1)%a.length].x,lerpindex),y:lerp(a[i].y,a[(i+1)%a.length].y,lerpindex)});
-     this.n+=n ;
-   }
+    if(distance(a[i].x, a[i].y, a[(i+1)%a.length].x, a[(i+1)%a.length].y)!=0 && 1>=(n/distance(a[i].x, a[i].y, a[(i+1)%a.length].x, a[(i+1)%a.length].y)*1.4143)){
+      this.n =0;
+      let lerpindex =0;
+ 
+     while(lerpindex<1 -(n/distance(a[i].x, a[i].y, a[(i+1)%a.length].x, a[(i+1)%a.length].y)*1.4143)){
+       lerpindex =  this.n/distance(a[i].x, a[i].y, a[(i+1)%a.length].x, a[(i+1)%a.length].y)*1.4143;
+       subdivideArrVert.push({x:lerp(a[i].x,a[(i+1)%a.length].x,lerpindex),y:lerp(a[i].y,a[(i+1)%a.length].y,lerpindex)});
+       this.n+=n ;
+     }
      
+    }
      
    
   }
-  
-  if(subdivideArrVert[0].x!=subdivideArrVert[subdivideArrVert.length-1].x||subdivideArrVert[0].y!=subdivideArrVert[subdivideArrVert.length-1].y){
-    subdivideArrVert.push(subdivideArrVert[0]);
+ 
+  this.indxC=0;
+ 
+  while(this.indxC<subdivideArrVert.length){
+     if( parseInt(subdivideArrVert[this.indxC].x) ==  parseInt(subdivideArrVert[(this.indxC+1)% subdivideArrVert.length].x) &&  parseInt(subdivideArrVert[this.indxC].y) ==  parseInt(subdivideArrVert[(this.indxC+1)% subdivideArrVert.length].y)){
+       subdivideArrVert.cut(this.indxC);
+     }else{
+       this.indxC++;
+     }
   }
+ 
   return subdivideArrVert;
 }
+
+
+
 
 
 
@@ -760,6 +818,23 @@ function checkobjinobj(o0,o1){
  
 
 
+ 
+function checkobjInteLine(o0,p2,p3){
+ 
+  let bol=false;
+  for(let ib=0;ib<o0.length;ib++){
+    let p0= new vector(o0[ib].x,o0[ib].y);
+    let p1= new vector(o0[(ib+1)%o0.length].x,o0[(ib+1)%o0.length].y);
+    if(!inte(p0,p1,p2,p3)){
+      bol=false ;    
+    }else{
+      bol=true;
+      break;
+      
+    }
+  }
+  return bol;
+}
  
 
 
